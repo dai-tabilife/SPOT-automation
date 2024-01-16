@@ -1,5 +1,3 @@
-const { expect } = require("@playwright/test");
-
 class CMSPage {
   constructor(page) {
     this.page = page;
@@ -10,12 +8,10 @@ class CMSPage {
 
   async clickLogoutButtonByText() {
     await this.page.getByText("ログアウト", { exact: true }).click();
-    await expect(this.page.locator("uni-modal > .uni-mask")).toBeVisible();
   }
 
   async clickCancelButton() {
     await this.page.getByText("いいえ").click();
-    expect(this.page.locator("uni-modal > .uni-mask")).toBeHidden();
   }
 
   async clickAcceptButton() {
@@ -45,9 +41,6 @@ class CMSPage {
     await this.waitForPageLoad();
     await this.changeHotelIdToDifferentId();
     await this.page.getByText("ログアウト", { exact: true }).click();
-
-    const currentUrl = this.page.url();
-    expect(currentUrl).toMatch(`${process.env.BASE_URL}pages/login/login`);
   }
 
   async clickRefreshButtonOnErrorDialog() {
@@ -55,12 +48,6 @@ class CMSPage {
     await this.changeHotelIdToDifferentId();
 
     await this.page.getByText("再試行", { exact: true }).click();
-
-    const currentUrl = this.page.url();
-    const expectedUrlPattern =
-      /https:\/\/test-38739\.web\.app\/admin\/#\/\?h=\w+/;
-
-    expect(currentUrl).toMatch(expectedUrlPattern);
   }
 
   // change language

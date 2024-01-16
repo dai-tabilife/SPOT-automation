@@ -38,6 +38,7 @@ test.describe("Login and Logout", () => {
     try {
       await cmsPage.waitForPageLoad();
       await cmsPage.clickLogoutButtonByText();
+      await expect(cmsPage.page.locator("uni-modal > .uni-mask")).toBeVisible();
     } catch (error) {
       console.error("Error clicking logout button:", error);
     }
@@ -48,6 +49,7 @@ test.describe("Login and Logout", () => {
       await cmsPage.waitForPageLoad();
       await cmsPage.clickLogoutButtonByText();
       await cmsPage.clickCancelButton();
+      expect(cmsPage.page.locator("uni-modal > .uni-mask")).toBeHidden();
     } catch (error) {
       console.error("Error clicking cancel button:", error);
     }
@@ -79,6 +81,9 @@ test.describe("Login and Logout", () => {
   test("Click Logout button on error dialog confirmation message", async () => {
     try {
       await cmsPage.clickLogoutButtonOnErrorDialog();
+
+      const currentUrl = cmsPage.page.url();
+      expect(currentUrl).toMatch(`${process.env.BASE_URL}pages/login/login`);
     } catch (error) {
       console.error("Error clicking logout button on error dialog:", error);
     }
@@ -87,6 +92,11 @@ test.describe("Login and Logout", () => {
   test("Click Refresh button on error dialog confirmation message", async () => {
     try {
       await cmsPage.clickRefreshButtonOnErrorDialog();
+      const currentUrl = cmsPage.page.url();
+      const expectedUrlPattern =
+        /https:\/\/test-38739\.web\.app\/admin\/#\/\?h=\w+/;
+
+      expect(currentUrl).toMatch(expectedUrlPattern);
     } catch (error) {
       console.error("Error clicking refresh button on error dialog:", error);
     }

@@ -49,6 +49,9 @@ test.describe("update information", () => {
   test("Click Cancel button at popup content", async () => {
     try {
       await generalSettingsPage.clickCancelButtonAtPopupContent();
+      await expect(
+        generalSettingsPage.page.locator(".uni-popup > uni-view:nth-child(2)")
+      ).toBeHidden();
     } catch (error) {
       console.error("Error clicking Cancel button:", error);
     }
@@ -57,6 +60,9 @@ test.describe("update information", () => {
   test("Update the changes to Banner transition time interval", async () => {
     try {
       await generalSettingsPage.updateBannerTransitionTimeInterval("3");
+      await expect(
+        generalSettingsPage.page.locator(".uni-popup > uni-view:nth-child(2)")
+      ).toBeHidden();
     } catch (error) {
       console.error("Error updating banner transition time interval:", error);
     }
@@ -65,6 +71,9 @@ test.describe("update information", () => {
   test("Click Information pencil icon", async () => {
     try {
       await generalSettingsPage.clickInformationPencilIcon();
+      await expect(
+        generalSettingsPage.page.getByText("詳細", { exact: true }).first()
+      ).toBeVisible();
     } catch (error) {
       console.error("Error clicking Information pencil icon:", error);
     }
