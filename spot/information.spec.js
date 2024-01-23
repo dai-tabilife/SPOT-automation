@@ -108,6 +108,23 @@ test.describe("update information", () => {
     }
   });
 
+  test("Click Cancel button at popup contents", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.changeTypeImage();
+      await informationPage.closeAllImages();
+      await informationPage.changeUploadImage();
+      await informationPage.page.locator(".popup-content");
+      await informationPage.clickCancelPupButton();
+      await expect(
+        informationPage.page.getByText('詳細', { exact: true }).first()
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
   test("Upload all supported images at Image / GIF Type (gif, png, jpg, jpeg, webp)", async () => {
     try {
       await informationPage.clickInformationPencilIcon();
@@ -115,6 +132,67 @@ test.describe("update information", () => {
       await informationPage.closeAllImages();
       await informationPage.changeUploadImage();
       await informationPage.selectImage();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Click on the video picker with Type Video", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.changeTypeVideo();
+      await informationPage.closeAllVideo();
+      await informationPage.changeUploadVideo();
+      await expect(
+        informationPage.page.locator(".popup-content")
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+  
+  test("Create a video banner without video uploaded", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.changeTypeVideo();
+      await informationPage.closeAllVideo();
+      await informationPage.changeUploadVideo();
+      await informationPage.clickConformPupButton();
+      await expect(
+        informationPage.page.getByText('* 必須項目')
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Leave image banner empty and click Confirm button", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.changeTypeImage();
+      await informationPage.closeAllImages();
+      await informationPage.clickConformlButton();
+      await expect(
+        informationPage.page.getByText('画像をアップロードしてください。')
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Leave video banner empty and click Confirm button", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.changeTypeVideo();
+      await informationPage.closeAllVideo();
+      await informationPage.clickConformlButton();
+      await expect(
+        informationPage.page.getByText('動画をアップロードしてください。')
+      ).toBeVisible();
     } catch (error) {
       console.error(error.message);
       throw error;
