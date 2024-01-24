@@ -11,12 +11,31 @@ class InformationPage {
       .click();
   }
 
+  async checkbox() {
+    const element1Handle = await this.page
+      .locator("uni-radio-group div")
+      .nth(1);
+    const element3Handle = await this.page
+      .locator("uni-radio-group div")
+      .nth(3);
+
+    const isElement1Checked = await element1Handle.evaluate((element) =>
+      element.classList.contains("uni-radio-input-checked")
+    );
+
+    const isElement3Checked = await element3Handle.evaluate((element) =>
+      element.classList.contains("uni-radio-input-checked")
+    );
+
+    return { isElement1Checked, isElement3Checked };
+  }
+
   async clickCancelButton() {
     await this.page.getByText("キャンセル").click();
   }
 
-  async clickConformlButton() {
-    await this.page.getByText('確定').click();
+  async clickConfirmlButton() {
+    await this.page.getByText("確定").click();
   }
 
   async clickCancelPupButton() {
@@ -26,12 +45,20 @@ class InformationPage {
       .click();
   }
 
-  async clickConformPupButton() {
-    await this.page.locator('uni-button').filter({ hasText: '確定' }).click();
+  async clickConfirmPupButton() {
+    await this.page.locator("uni-button").filter({ hasText: "確定" }).click();
   }
 
   async changeTypeImage() {
-    await this.page.getByRole("combobox").selectOption("画像/GIF");
+    const { isElement1Checked, isElement3Checked } = await this.checkbox();
+    if (isElement1Checked) {
+      await this.localeVersion();
+      await this.page.getByRole("combobox").first();
+      console.log("isElement1Checked", isElement1Checked);
+    } else if (isElement3Checked) {
+      await this.page.getByRole("combobox").selectOption("画像/GIF");
+      console.log("isElement3Checked", isElement3Checked);
+    }
   }
 
   async changeTypeVideo() {
@@ -96,6 +123,68 @@ class InformationPage {
           /^\* \.mp4, \.m4v, & \.movの動画形式をアップロードしてください。\(上限10MB\)$/,
       })
       .locator("svg")
+      .click();
+  }
+
+  async clearUrl() {
+    await this.page.locator(".uni-input-input").first().clear();
+  }
+
+  async clearFacilityName() {
+    await this.page
+      .locator(
+        ".input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first()
+      .clear();
+  }
+
+  async clearAddressEempty() {
+    await this.page
+      .locator(
+        "uni-view:nth-child(2) > .uni-forms-item__box > .uni-forms-item__inner > .uni-forms-item__content > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first()
+      .clear();
+  }
+
+  async clearPhoneNumber() {
+    await this.page
+      .locator(
+        ".uni-forms-item__content > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first()
+      .clear();
+  }
+
+  async addFillPhone() {
+    const phoneNumber = await this.page
+      .locator(
+        ".uni-forms-item__content > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first();
+    if (phoneNumber) {
+      phoneNumber.fill("044444444");
+    }
+  }
+
+  async delBasicEntry() {
+    await this.page.locator(".action-item").first().click();
+  }
+
+  async cancelButtonDelBasicEntry() {
+    await this.page.getByText("いいえ").click();
+  }
+  
+  async confirmButtonDelBasicEntry() {
+    await this.page.getByText("はい").click();
+  }
+
+  async localeVersion() {
+    await this.page
+      .locator("div")
+      .filter({ hasText: /^英語版$/ })
+      .nth(1)
       .click();
   }
 }

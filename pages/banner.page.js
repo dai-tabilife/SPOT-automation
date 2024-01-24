@@ -18,8 +18,33 @@ class BannerPage {
   async clickCancelButton() {
     await this.page.getByText("キャンセル").click();
   }
+  
+  async checkbox() {
+    const element1Handle = await this.page.locator("uni-radio-group div").nth(1);
+    const element3Handle = await this.page.locator("uni-radio-group div").nth(3);
+
+    const isElement1Checked = await element1Handle.evaluate((element) =>
+      element.classList.contains("uni-radio-input-checked")
+    );
+
+    const isElement3Checked = await element3Handle.evaluate((element) =>
+      element.classList.contains("uni-radio-input-checked")
+    );
+
+    return { isElement1Checked, isElement3Checked };
+  }
+
   async clickAddButton() {
-    await this.page.getByText("追加").first().click();
+    const { isElement1Checked, isElement3Checked } = await this.checkbox();
+    
+    if(isElement1Checked){
+      await this.localeVersion();
+      await this.page.getByText("追加").first().click();
+      console.log("isElement1Checked", isElement1Checked)
+    } else if(isElement3Checked){
+      await this.page.getByText("追加").first().click();
+      console.log("isElement3Checked", isElement3Checked)
+    }
   }
 
   async clickConfirmButton() {
@@ -43,11 +68,11 @@ class BannerPage {
   }
 
   async localeVersion() {
-     await this.page
-    .locator("div")
-    .filter({ hasText: /^英語版$/ })
-    .nth(1)
-    .click();
+    await this.page
+      .locator("div")
+      .filter({ hasText: /^英語版$/ })
+      .nth(1)
+      .click();
   }
 }
 

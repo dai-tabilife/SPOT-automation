@@ -59,7 +59,7 @@ test.describe("update information", () => {
       await informationPage.clickInformationPencilIcon();
       await informationPage.changeTypeImage();
       await expect(
-        informationPage.page.getByText("* .gif, .png, .jpg, .jpeg, .")
+        informationPage.page.getByText("* .gif, .png, .jpg, .jpeg, .").first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -117,7 +117,7 @@ test.describe("update information", () => {
       await informationPage.page.locator(".popup-content");
       await informationPage.clickCancelPupButton();
       await expect(
-        informationPage.page.getByText('詳細', { exact: true }).first()
+        informationPage.page.getByText("詳細", { exact: true }).first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -152,17 +152,15 @@ test.describe("update information", () => {
       throw error;
     }
   });
-  
+
   test("Create a video banner without video uploaded", async () => {
     try {
       await informationPage.clickInformationPencilIcon();
       await informationPage.changeTypeVideo();
       await informationPage.closeAllVideo();
       await informationPage.changeUploadVideo();
-      await informationPage.clickConformPupButton();
-      await expect(
-        informationPage.page.getByText('* 必須項目')
-      ).toBeVisible();
+      await informationPage.clickConfirmPupButton();
+      await expect(informationPage.page.getByText("* 必須項目")).toBeVisible();
     } catch (error) {
       console.error(error.message);
       throw error;
@@ -174,9 +172,9 @@ test.describe("update information", () => {
       await informationPage.clickInformationPencilIcon();
       await informationPage.changeTypeImage();
       await informationPage.closeAllImages();
-      await informationPage.clickConformlButton();
+      await informationPage.clickConfirmlButton();
       await expect(
-        informationPage.page.getByText('画像をアップロードしてください。')
+        informationPage.page.getByText("画像をアップロードしてください。")
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -189,9 +187,129 @@ test.describe("update information", () => {
       await informationPage.clickInformationPencilIcon();
       await informationPage.changeTypeVideo();
       await informationPage.closeAllVideo();
-      await informationPage.clickConformlButton();
+      await informationPage.clickConfirmlButton();
       await expect(
-        informationPage.page.getByText('動画をアップロードしてください。')
+        informationPage.page.getByText("動画をアップロードしてください。")
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Leave url banner empty and click Confirm button", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.changeTypeURL();
+      await informationPage.clearUrl();
+      await informationPage.clickConfirmlButton();
+      await expect(
+        informationPage.page.getByText('画像URLを入力してください。')
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Leave facility name empty and click Confirm button", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.clearFacilityName();
+      await informationPage.clickConfirmlButton();
+      await expect(
+        informationPage.page.getByText("施設名を入力してください。")
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Leave address empty and click Confirm button", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.clearAddressEempty();
+      await informationPage.clickConfirmlButton();
+      await expect(
+        informationPage.page.getByText("住所を入力してください。")
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Leave phone number empty and click Confirm button", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.clearPhoneNumber();
+      await informationPage.clickConfirmlButton();
+      await expect(
+        informationPage.page.getByText("電話番号を入力してください。")
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Input incorrect japan phone number format anc click Confirm buttonn", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.clearPhoneNumber();
+      await informationPage.addFillPhone();
+      await informationPage.clickConfirmlButton();
+      await expect(
+        informationPage.page.getByText('入力された電話番号は登録できません。もう一度ご確認ください。')
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Click delete icon at each hotel basic entry (title is not empty)", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.delBasicEntry();
+      await expect(
+        informationPage.page.locator('div').filter({ hasText: /^削除確認$/ })
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Click No button hotel basic entry ", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.delBasicEntry();
+      await informationPage.cancelButtonDelBasicEntry();
+      await expect(
+        informationPage.page.getByText('香港国際ホテル hotel追加').first()
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Click yes button hotel basic entry ", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.delBasicEntry();
+      await informationPage.confirmButtonDelBasicEntry();
+      await expect(
+        informationPage.page.getByText('香港国際ホテル hotel追加').first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
