@@ -168,14 +168,31 @@ class InformationPage {
     }
   }
 
+  async clearTitle() {
+    await this.page
+      .locator(
+        ".left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first()
+      .clear();
+  }
+
   async delBasicEntry() {
     await this.page.locator(".action-item").first().click();
+  }
+
+  async addBasicEntry() {
+    await this.page
+      .locator("uni-view")
+      .filter({ hasText: /^追加$/ })
+      .first()
+      .click();
   }
 
   async cancelButtonDelBasicEntry() {
     await this.page.getByText("いいえ").click();
   }
-  
+
   async confirmButtonDelBasicEntry() {
     await this.page.getByText("はい").click();
   }

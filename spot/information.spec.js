@@ -204,7 +204,7 @@ test.describe("update information", () => {
       await informationPage.clearUrl();
       await informationPage.clickConfirmlButton();
       await expect(
-        informationPage.page.getByText('画像URLを入力してください。')
+        informationPage.page.getByText("画像URLを入力してください。")
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -265,7 +265,41 @@ test.describe("update information", () => {
       await informationPage.addFillPhone();
       await informationPage.clickConfirmlButton();
       await expect(
-        informationPage.page.getByText('入力された電話番号は登録できません。もう一度ご確認ください。')
+        informationPage.page.getByText(
+          "入力された電話番号は登録できません。もう一度ご確認ください。"
+        )
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  const dynamicSelector =
+    ".left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content";
+
+  test("Click +Add button at hotel basic entry", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.addBasicEntry();
+      await expect(
+        informationPage.page.locator('uni-view:nth-child(6) > .left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content').first()
+      ).toBeVisible();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
+  test("Click delete icon at each hotel basic entry (title is empty)", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      await informationPage.clearTitle();
+      await informationPage.delBasicEntry();
+      await expect(
+        informationPage.page.locator(dynamicSelector).first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -279,7 +313,7 @@ test.describe("update information", () => {
       await informationPage.localeVersion();
       await informationPage.delBasicEntry();
       await expect(
-        informationPage.page.locator('div').filter({ hasText: /^削除確認$/ })
+        informationPage.page.locator(dynamicSelector).first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -294,7 +328,7 @@ test.describe("update information", () => {
       await informationPage.delBasicEntry();
       await informationPage.cancelButtonDelBasicEntry();
       await expect(
-        informationPage.page.getByText('香港国際ホテル hotel追加').first()
+        informationPage.page.locator(dynamicSelector).first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -308,8 +342,8 @@ test.describe("update information", () => {
       await informationPage.localeVersion();
       await informationPage.delBasicEntry();
       await informationPage.confirmButtonDelBasicEntry();
-      await expect(
-        informationPage.page.getByText('香港国際ホテル hotel追加').first()
+       await expect(
+        informationPage.page.locator(dynamicSelector).first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);

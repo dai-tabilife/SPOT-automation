@@ -136,28 +136,53 @@ test.describe("update banner", () => {
   });
 
   const filePath = "../images/image.jpg";
-  test("Create an image banner without Banner name inputted", async () => {
-    try {
-      await bannerPage.clickBannerPencilIcon();
-      await bannerPage.clickAddButton();
-      await bannerPage.windowForm();
+  test.describe("update editing with Separate and Same", () => {
+    test("Create an image banner without Banner name inputted with Separate", async () => {
+      try {
+        await bannerPage.clickBannerPencilIcon();
+        await bannerPage.clickAddButton();
+        await bannerPage.windowForm();
 
-      bannerPage.page.on("filechooser", async (filechooser) => {
-        await filechooser.setFiles([filePath]);
-      });
-      await bannerPage.page.click(".file-picker__box-content > svg");
+        bannerPage.page.on("filechooser", async (filechooser) => {
+          await filechooser.setFiles([filePath]);
+        });
+        await bannerPage.page.click(".file-picker__box-content > svg");
 
-      await bannerPage.localeVersion();
-      await bannerPage.clickConfirmButton();
-      await expect(
-        bannerPage.page
-          .locator(".uni-forms-item__content > .error-message > span")
-          .first()
-      ).toBeVisible();
-    } catch (error) {
-      console.error(error.message);
-      throw error;
-    }
+        await bannerPage.clickConfirmButton();
+        await expect(
+          bannerPage.page
+            .locator(".uni-forms-item__content > .error-message > span")
+            .first()
+        ).toBeVisible();
+      } catch (error) {
+        console.error(error.message);
+        throw error;
+      }
+    });
+
+    test("Create an image banner without Banner name inputted with same", async () => {
+      try {
+        await bannerPage.clickBannerPencilIcon();
+        await bannerPage.clickAddButton();
+        await bannerPage.windowForm();
+
+        bannerPage.page.on("filechooser", async (filechooser) => {
+          await filechooser.setFiles([filePath]);
+        });
+        await bannerPage.page.click(".file-picker__box-content > svg");
+
+        await bannerPage.localeVersion();
+        await bannerPage.clickConfirmButton();
+        await expect(
+          bannerPage.page
+            .locator(".uni-forms-item__content > .error-message > span")
+            .first()
+        ).toBeVisible();
+      } catch (error) {
+        console.error(error.message);
+        throw error;
+      }
+    });
   });
 
   test.afterAll(async ({ browser }) => {

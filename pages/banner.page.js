@@ -18,10 +18,14 @@ class BannerPage {
   async clickCancelButton() {
     await this.page.getByText("キャンセル").click();
   }
-  
+
   async checkbox() {
-    const element1Handle = await this.page.locator("uni-radio-group div").nth(1);
-    const element3Handle = await this.page.locator("uni-radio-group div").nth(3);
+    const element1Handle = await this.page
+      .locator("uni-radio-group div")
+      .nth(1);
+    const element3Handle = await this.page
+      .locator("uni-radio-group div")
+      .nth(3);
 
     const isElement1Checked = await element1Handle.evaluate((element) =>
       element.classList.contains("uni-radio-input-checked")
@@ -36,14 +40,12 @@ class BannerPage {
 
   async clickAddButton() {
     const { isElement1Checked, isElement3Checked } = await this.checkbox();
-    
-    if(isElement1Checked){
+
+    if (isElement1Checked) {
       await this.localeVersion();
       await this.page.getByText("追加").first().click();
-      console.log("isElement1Checked", isElement1Checked)
-    } else if(isElement3Checked){
+    } else if (isElement3Checked) {
       await this.page.getByText("追加").first().click();
-      console.log("isElement3Checked", isElement3Checked)
     }
   }
 
@@ -65,6 +67,16 @@ class BannerPage {
 
   async windowForm() {
     await this.page.locator(".ad-window", { exact: true }).first();
+  }
+
+  async addFillBannerName() {
+    const phoneNumber = await this.page
+      .locator("uni-view")
+      .filter({ hasText: /^入力してください。\*必須な項目$/ })
+      .getByRole("textbox");
+    if (phoneNumber) {
+      phoneNumber.fill("Banner name");
+    }
   }
 
   async localeVersion() {
