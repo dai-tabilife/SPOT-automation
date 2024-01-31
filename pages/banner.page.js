@@ -70,12 +70,12 @@ class BannerPage {
   }
 
   async addFillBannerName() {
-    const phoneNumber = await this.page
+    const bannerName = await this.page
       .locator("uni-view")
       .filter({ hasText: /^入力してください。\*必須な項目$/ })
       .getByRole("textbox");
-    if (phoneNumber) {
-      phoneNumber.fill("Banner name");
+    if (bannerName) {
+      bannerName.fill("Banner name");
     }
   }
 

@@ -62,11 +62,23 @@ class InformationPage {
   }
 
   async changeTypeVideo() {
-    await this.page.getByRole("combobox").selectOption("ビデオ");
+    const { isElement1Checked, isElement3Checked } = await this.checkbox();
+    if (isElement1Checked) {
+      await this.localeVersion();
+      await this.page.getByRole("combobox").first().selectOption("ビデオ");
+    } else if (isElement3Checked) {
+      await this.page.getByRole("combobox").selectOption("ビデオ");
+    }
   }
 
   async changeTypeURL() {
-    await this.page.getByRole("combobox").selectOption("URL");
+    const { isElement1Checked, isElement3Checked } = await this.checkbox();
+    if (isElement1Checked) {
+      await this.localeVersion();
+      await this.page.getByRole("combobox").first().selectOption("URL");
+    } else if (isElement3Checked) {
+      await this.page.getByRole("combobox").selectOption("URL");
+    }
   }
 
   async closeAllImages() {
@@ -85,19 +97,35 @@ class InformationPage {
   }
 
   async changeUploadImage() {
-    await this.page
-      .locator("uni-view")
-      .filter({
-        hasText:
-          /^\* \.gif, \.png, \.jpg, \.jpeg, \.webpの画像形式をアップロードしてください$/,
-      })
-      .locator("svg")
-      .click();
+    const { isElement1Checked, isElement3Checked } = await this.checkbox();
+    if (isElement1Checked) {
+      await this.page
+        .locator("uni-view")
+        .filter({
+          hasText:
+            /^\* \.gif, \.png, \.jpg, \.jpeg, \.webpの画像形式をアップロードしてください$/,
+        })
+        .locator("svg")
+        .first()
+        .click();
+    } else if (isElement3Checked) {
+      await this.page
+        .locator("uni-view")
+        .filter({
+          hasText:
+            /^\* \.gif, \.png, \.jpg, \.jpeg, \.webpの画像形式をアップロードしてください$/,
+        })
+        .locator("svg")
+        .click();
+    }
   }
 
   async selectImage() {
-    await this.page.locator(".file-picker__box-content").click();
-    await this.page.locator("body").setInputFiles("a.jpg");
+    const filePath = "../images/image.jpg";
+    await this.page.on("filechooser", async (filechooser) => {
+      await filechooser.setFiles([filePath]);
+    });
+    await this.page.click(".file-picker__box-content > svg");
   }
 
   async closeAllVideo() {
@@ -126,6 +154,23 @@ class InformationPage {
       .click();
   }
 
+  async selectVideo() {
+    const filePath = "../videos/video.mov";
+    await this.page.on("filechooser", async (filechooser) => {
+      await filechooser.setFiles([filePath]);
+    });
+    await this.page.click(".file-picker__box-content > svg");
+  }
+
+  async addUrl() {
+    const url = await this.page.locator(".uni-input-input").first();
+    if (url) {
+      url.fill(
+        "https://media.techz.vn/resize_x650x/media2019/upload2019/2020/06/14/file-tiff-la-gi_14062020005200.jpg"
+      );
+    }
+  }
+
   async clearUrl() {
     await this.page.locator(".uni-input-input").first().clear();
   }
@@ -139,6 +184,17 @@ class InformationPage {
       .clear();
   }
 
+  async addFillFacilityName() {
+    const facilityName = await this.page
+      .locator(
+        ".input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first();
+    if (facilityName) {
+      facilityName.fill("tabilife EN");
+    }
+  }
+
   async clearAddressEempty() {
     await this.page
       .locator(
@@ -146,6 +202,17 @@ class InformationPage {
       )
       .first()
       .clear();
+  }
+
+  async addAddressEempty() {
+    const addressEempty = await this.page
+      .locator(
+        "uni-view:nth-child(2) > .uni-forms-item__box > .uni-forms-item__inner > .uni-forms-item__content > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first();
+    if (addressEempty) {
+      addressEempty.fill("EN 〒108-0023東京都港区西麻布十番10-12-22 永順番");
+    }
   }
 
   async clearPhoneNumber() {
@@ -165,6 +232,28 @@ class InformationPage {
       .first();
     if (phoneNumber) {
       phoneNumber.fill("044444444");
+    }
+  }
+
+  async addFillPhoneCorrect() {
+    const phoneNumber = await this.page
+      .locator(
+        ".uni-forms-item__content > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input"
+      )
+      .first();
+    if (phoneNumber) {
+      phoneNumber.fill("00056666664");
+    }
+  }
+
+  async clearEditor() {
+    await this.page.locator(".ql-editor").first().clear();
+  }
+
+  async addEditor() {
+    const editor = await this.page.locator(".ql-editor").first();
+    if (editor) {
+      editor.fill("Hello! this editor");
     }
   }
 
