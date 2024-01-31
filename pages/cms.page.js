@@ -19,8 +19,7 @@ class CMSPage {
   }
 
   async waitForPageLoad() {
-    await this.page.waitForLoadState("networkidle");
-    await this.page.waitForTimeout(7000);
+    await new Promise((resolve) => setTimeout(resolve, 7000));
   }
 
   // change hotelID
@@ -34,7 +33,7 @@ class CMSPage {
     const id = this.createHotelId();
     const newUrl = url.replace(/(h=)[^\&]+/, `$1${id}`);
     await this.page.goto(newUrl);
-    await this.page.waitForLoadState("networkidle");
+    await this.waitForPageLoad();
   }
 
   async clickLogoutButtonOnErrorDialog() {

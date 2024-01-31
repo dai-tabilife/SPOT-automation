@@ -3,9 +3,8 @@ import LoginPage from "../pages/login.page";
 const { test, expect } = require("@playwright/test");
 require("dotenv").config();
 
-let informationPage;
-
 test.describe("update information", () => {
+  let informationPage;
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -284,7 +283,11 @@ test.describe("update information", () => {
       await informationPage.localeVersion();
       await informationPage.addBasicEntry();
       await expect(
-        informationPage.page.locator('uni-view:nth-child(6) > .left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content').first()
+        informationPage.page
+          .locator(
+            "uni-view:nth-child(6) > .left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content"
+          )
+          .first()
       ).toBeVisible();
     } catch (error) {
       console.error(error.message);
@@ -342,7 +345,7 @@ test.describe("update information", () => {
       await informationPage.localeVersion();
       await informationPage.delBasicEntry();
       await informationPage.confirmButtonDelBasicEntry();
-       await expect(
+      await expect(
         informationPage.page.locator(dynamicSelector).first()
       ).toBeVisible();
     } catch (error) {
@@ -352,8 +355,6 @@ test.describe("update information", () => {
   });
 
   test.afterAll(async ({ browser }) => {
-    if (informationPage) {
-      await browser.close();
-    }
+    browser.close;
   });
 });

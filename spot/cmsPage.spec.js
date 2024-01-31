@@ -3,9 +3,8 @@ import LoginPage from "../pages/login.page";
 const { test, expect } = require("@playwright/test");
 require("dotenv").config();
 
-let cmsPage;
-
 test.describe("Login and Logout", () => {
+  let cmsPage;
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -22,12 +21,7 @@ test.describe("Login and Logout", () => {
 
       await newPagePromise;
       cmsPage = new CMSPage(page);
-
-      // const currentUrl = await loginPage.getCurrentUrl();
-      // const expectedUrlPattern =
-      //   /https:\/\/test-38739\.web\.app\/admin\/#\/\?h=\w+/;
-
-      // expect(currentUrl).toMatch(expectedUrlPattern);
+      await cmsPage.waitForPageLoad();
     } catch (error) {
       console.error(error.message);
       throw error;
@@ -36,9 +30,8 @@ test.describe("Login and Logout", () => {
 
   test("Click Logout button on CMS home page", async () => {
     try {
-      await cmsPage.waitForPageLoad();
       await cmsPage.clickLogoutButtonByText();
-      await expect(cmsPage.page.locator("uni-modal > .uni-mask")).toBeVisible();
+      await expect(cmsPage.page.locator(".uni-modal")).toBeVisible();
     } catch (error) {
       console.error("Error clicking logout button:", error);
     }
@@ -46,10 +39,9 @@ test.describe("Login and Logout", () => {
 
   test("Click No button on logout dialog confirmation message", async () => {
     try {
-      await cmsPage.waitForPageLoad();
       await cmsPage.clickLogoutButtonByText();
       await cmsPage.clickCancelButton();
-      expect(cmsPage.page.locator("uni-modal > .uni-mask")).toBeHidden();
+      expect(cmsPage.page.locator(".uni-modal")).toBeHidden();
     } catch (error) {
       console.error("Error clicking cancel button:", error);
     }
@@ -57,7 +49,6 @@ test.describe("Login and Logout", () => {
 
   test("Click Yes button on logout dialog confirmation message", async () => {
     try {
-      await cmsPage.waitForPageLoad();
       await cmsPage.clickLogoutButtonByText();
       await cmsPage.clickAcceptButton();
 
@@ -72,7 +63,7 @@ test.describe("Login and Logout", () => {
     try {
       await cmsPage.changeHotelIdToDifferentId();
 
-      await expect(cmsPage.page.locator("uni-modal > .uni-mask")).toBeVisible();
+      await expect(cmsPage.page.locator(".uni-modal")).toBeVisible();
     } catch (error) {
       console.error("Error changing hotel ID:", error);
     }
@@ -121,8 +112,6 @@ test.describe("Login and Logout", () => {
   });
 
   test.afterAll(async ({ browser }) => {
-    if (cmsPage) {
-      await browser.close();
-    }
+    browser.close;
   });
 });

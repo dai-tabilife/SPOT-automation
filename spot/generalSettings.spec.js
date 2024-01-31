@@ -3,9 +3,9 @@ import LoginPage from "../pages/login.page";
 const { test, expect } = require("@playwright/test");
 require("dotenv").config();
 
-let generalSettingsPage;
 
 test.describe("update information", () => {
+  let generalSettingsPage;
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
@@ -80,8 +80,6 @@ test.describe("update information", () => {
   });
 
   test.afterAll(async ({ browser }) => {
-    if (generalSettingsPage) {
-      await browser.close();
-    }
-  });
+    browser.close;
+});
 });
