@@ -267,6 +267,65 @@ test.describe("update information", () => {
     }
   });
 
+  test("Observe the behavior on hotel basic entry once the limit is 6", async () => {
+    try {
+      await informationPage.clickInformationPencilIcon();
+      await informationPage.localeVersion();
+      let formItemCount = await informationPage.page
+        .locator(".accordion-content > div")
+        .first()
+        .locator(".form-content .form-item-inputs")
+        .count();
+      while (formItemCount < 6) {
+        await informationPage.page
+          .locator("uni-view")
+          .filter({ hasText: /^追加$/ })
+          .first()
+          .click();
+
+        const formIndex = await informationPage.page
+          .locator(".accordion-content > div")
+          .first()
+          .locator(".form-content .form-item-inputs")
+          .count();
+        const countUniView = 7;
+        const formSelector = `.form-content .form-item-inputs:nth-of-type(${
+          formIndex + countUniView
+        }) > .left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input`;
+
+        await informationPage.page
+          .locator(".accordion-content > div")
+          .first()
+          .locator(formSelector)
+          .first()
+          .fill("lynked");
+        await informationPage.page
+          .locator(".accordion-content > div")
+          .first()
+          .locator(formSelector.replace("left-input", "mid-input"))
+          .first()
+          .fill("test");
+
+        await informationPage.page.waitForTimeout(1000);
+        formItemCount = await informationPage.page
+          .locator(".accordion-content > div")
+          .first()
+          .locator(".form-content .form-item-inputs")
+          .count();
+      }
+
+      await expect(
+        informationPage.page
+          .locator(".accordion-content > div")
+          .first()
+          .locator(".form-content .setting-title-btn .btn-plus")
+      ).toBeHidden();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  });
+
   test.describe("update information with Separate and Same", () => {
     test("Under Type, select Video with Separate", async () => {
       try {
