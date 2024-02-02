@@ -53,7 +53,7 @@ class InformationPage {
     const { isElement1Checked, isElement3Checked } = await this.checkbox();
     if (isElement1Checked) {
       await this.localeVersion();
-      await this.page.getByRole("combobox").first();
+      await this.page.getByRole("combobox").first().selectOption("画像/GIF");
       console.log("isElement1Checked", isElement1Checked);
     } else if (isElement3Checked) {
       await this.page.getByRole("combobox").selectOption("画像/GIF");
@@ -266,6 +266,19 @@ class InformationPage {
       .clear();
   }
 
+  async formItemCount() {
+    try {
+      return await this.page
+        .locator(".accordion-content > div")
+        .first()
+        .locator(".form-content .form-item-inputs")
+        .count();
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
   async delBasicEntry() {
     await this.page.locator(".action-item").first().click();
   }
@@ -284,6 +297,22 @@ class InformationPage {
 
   async confirmButtonDelBasicEntry() {
     await this.page.getByText("はい").click();
+  }
+
+  async fillContent() {
+    await this.clearFacilityName();
+    await this.addFillFacilityName();
+    await this.page.waitForTimeout(1000);
+    await this.clearAddressEempty();
+    await this.addAddressEempty();
+    await this.page.waitForTimeout(1000);
+    await this.clearPhoneNumber();
+    await this.addFillPhoneCorrect();
+    await this.page.waitForTimeout(1000);
+    await this.clearEditor();
+    await this.addEditor();
+    await this.page.waitForTimeout(1000);
+    await this.clickConfirmlButton();
   }
 
   async localeVersion() {

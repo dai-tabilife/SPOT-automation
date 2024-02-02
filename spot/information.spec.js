@@ -267,32 +267,21 @@ test.describe("update information", () => {
     }
   });
 
-  test("Observe the behavior on hotel basic entry once the limit is 6", async () => {
+  async function performBasicEntryTest(informationPage, expectedVisibility) {
     try {
       await informationPage.clickInformationPencilIcon();
       await informationPage.localeVersion();
-      let formItemCount = await informationPage.page
-        .locator(".accordion-content > div")
-        .first()
-        .locator(".form-content .form-item-inputs")
-        .count();
+      let formItemCount = await informationPage.formItemCount();
+  
       while (formItemCount < 6) {
-        await informationPage.page
-          .locator("uni-view")
-          .filter({ hasText: /^追加$/ })
-          .first()
-          .click();
-
-        const formIndex = await informationPage.page
-          .locator(".accordion-content > div")
-          .first()
-          .locator(".form-content .form-item-inputs")
-          .count();
+        await informationPage.addBasicEntry();
+  
+        const formIndex = await informationPage.formItemCount();
         const countUniView = 7;
         const formSelector = `.form-content .form-item-inputs:nth-of-type(${
           formIndex + countUniView
         }) > .left-input > .box > .box-translate > .input-data > .uni-easyinput > .uni-easyinput__content > .uni-easyinput__content-input > .uni-input-wrapper > .uni-input-input`;
-
+  
         await informationPage.page
           .locator(".accordion-content > div")
           .first()
@@ -305,261 +294,226 @@ test.describe("update information", () => {
           .locator(formSelector.replace("left-input", "mid-input"))
           .first()
           .fill("test");
-
+  
         await informationPage.page.waitForTimeout(1000);
-        formItemCount = await informationPage.page
-          .locator(".accordion-content > div")
-          .first()
-          .locator(".form-content .form-item-inputs")
-          .count();
+        formItemCount = await informationPage.formItemCount();
       }
-
-      await expect(
-        informationPage.page
-          .locator(".accordion-content > div")
-          .first()
-          .locator(".form-content .setting-title-btn .btn-plus")
-      ).toBeHidden();
+  
+      if (expectedVisibility === "hidden") {
+        await expect(
+          informationPage.page
+            .locator(".accordion-content > div")
+            .first()
+            .locator(".form-content .setting-title-btn .btn-plus")
+        ).toBeHidden();
+      } else if (expectedVisibility === "visible") {
+        await informationPage.delBasicEntry();
+        await informationPage.confirmButtonDelBasicEntry();
+        formItemCount = await informationPage.formItemCount();
+  
+        await expect(
+          informationPage.page
+            .locator(".accordion-content > div")
+            .first()
+            .locator(".form-content .setting-title-btn .btn-plus")
+        ).toBeVisible();
+      }
     } catch (error) {
       console.error(error.message);
       throw error;
     }
+  }
+  
+  test("Observe the behavior on hotel basic entry once the limit is 6", async () => {
+    await performBasicEntryTest(informationPage, "hidden");
+  });
+  
+  test("Observe the behavior on hotel basic entry once removed a basic entry from 6 to 5", async () => {
+    await performBasicEntryTest(informationPage, "visible");
   });
 
   test.describe("update information with Separate and Same", () => {
-    test("Under Type, select Video with Separate", async () => {
+    async function performTypeTest(informationPage, type, single) {
       try {
         await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await expect(
-          informationPage.page.getByText("* .mp4, .m4v, & .mov").first()
-        ).toBeVisible();
+    
+        if (type === "video") {
+          await informationPage.changeTypeVideo();
+        } else if (type === "URL") {
+          await informationPage.changeTypeURL();
+        }
+    
+        const selector = single
+          ? type === "video" ? "* .mp4, .m4v, & .mov" : "画像 URL:入力してください。URL"
+          : type === "video" ? "* .mp4, .m4v, & .mov" : "画像 URL:入力してください。URL";
+    
+        await expect(informationPage.page.getByText(selector).first()).toBeVisible();
       } catch (error) {
         console.error(error.message);
         throw error;
       }
+    }
+    
+    test("Under Type, select Video with Separate", async () => {
+      await performTypeTest(informationPage, "video", true);
     });
     test("Under Type, select Video with Same", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await expect(
-          informationPage.page.getByText("* .mp4, .m4v, & .mov")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performTypeTest(informationPage, "video", false);
     });
-
+    
     test("Under Type, select URL with Separate", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeURL();
-        await expect(
-          informationPage.page
-            .getByText("画像 URL:入力してください。URL")
-            .first()
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performTypeTest(informationPage, "URL", true);
     });
     test("Under Type, select URL with Same", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeURL();
-        await expect(
-          informationPage.page.getByText("画像 URL:入力してください。URL")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performTypeTest(informationPage, "URL", false);
     });
-
-    test("Click on the image picker with Type Image / GIF with ", async () => {
+  
+    // Click on the image/ video
+    async function performPickerTest(informationPage, type, same) {
       try {
         await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeImage();
-        await informationPage.page.locator(".uni-icon-clear").first().click();
-        await informationPage.changeUploadImage();
-        await expect(
-          informationPage.page.locator(".popup-content")
-        ).toBeVisible();
+    
+        if (type === "image") {
+          await informationPage.changeTypeImage();
+          if (same) {
+            await informationPage.closeAllImages();
+          } else {
+            await informationPage.page.locator(".uni-icon-clear").first().click();
+          }
+          await informationPage.changeUploadImage();
+        } else if (type === "video") {
+          await informationPage.changeTypeVideo();
+          if (same) {
+            await informationPage.closeAllVideo();
+          } else {
+            await informationPage.page.locator(".uni-icon-cancel").first().click();
+          }
+          await informationPage.changeUploadVideo();
+        }
+    
+        await expect(informationPage.page.locator(".popup-content")).toBeVisible();
       } catch (error) {
         console.error(error.message);
         throw error;
       }
+    }   
+    test("Click on the image picker with Type Image / GIF with Separate", async () => {
+      await performPickerTest(informationPage, "image", false);
     });
     test("Click on the image picker with Type Image / GIF with Same", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeImage();
-        await informationPage.closeAllImages();
-        await informationPage.changeUploadImage();
-        await expect(
-          informationPage.page.locator(".popup-content")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performPickerTest(informationPage, "image", true);
     });
-
-    test("Click Cancel button at popup contents with Separate", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeImage();
-        await informationPage.page.locator(".uni-icon-clear").first().click();
-        await informationPage.changeUploadImage();
-        await informationPage.page.locator(".popup-content");
-        await informationPage.clickCancelPupButton();
-        await expect(
-          informationPage.page.getByText("詳細", { exact: true }).first()
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
-    });
-    test("Click Cancel button at popup contents with Same", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeImage();
-        await informationPage.closeAllImages();
-        await informationPage.changeUploadImage();
-        await informationPage.page.locator(".popup-content");
-        await informationPage.clickCancelPupButton();
-        await expect(
-          informationPage.page.getByText("詳細", { exact: true }).first()
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
-    });
-
+    
     test("Click on the video picker with Type Video with Separate", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await informationPage.page.locator(".uni-icon-cancel").first().click();
-        await informationPage.changeUploadVideo();
-        await expect(
-          informationPage.page.locator(".popup-content")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performPickerTest(informationPage, "video", false);
     });
     test("Click on the video picker with Type Video with Same", async () => {
+      await performPickerTest(informationPage, "video", true);
+    });
+    
+    // Click Cancel button at popup contents
+    async function performCancelPopupTest(informationPage, same) {
       try {
         await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await informationPage.closeAllVideo();
-        await informationPage.changeUploadVideo();
+        await informationPage.changeTypeImage();
+    
+        if (same) {
+          await informationPage.closeAllImages();
+        } else {
+          await informationPage.page.locator(".uni-icon-clear").first().click();
+        }
+    
+        await informationPage.changeUploadImage();
+        await informationPage.page.locator(".popup-content");
+        await informationPage.clickCancelPupButton();
+    
         await expect(
-          informationPage.page.locator(".popup-content")
+          informationPage.page.getByText("詳細", { exact: true }).first()
         ).toBeVisible();
       } catch (error) {
         console.error(error.message);
         throw error;
       }
+    }
+    
+    test("Click Cancel button at popup contents with Separate", async () => {
+      await performCancelPopupTest(informationPage, false);
+    });
+    
+    test("Click Cancel button at popup contents with Same", async () => {
+      await performCancelPopupTest(informationPage, true);
     });
 
+    // "Create a video banner without video uploaded
+    async function performCreateVideoBannerTest(informationPage, same) {
+      try {
+        await informationPage.clickInformationPencilIcon();
+        await informationPage.changeTypeVideo();
+    
+        if (same) {
+          await informationPage.closeAllVideo();
+        } else {
+          await informationPage.page.locator(".uni-icon-cancel").first().click();
+        }
+    
+        await informationPage.changeUploadVideo();
+        await informationPage.clickConfirmPupButton();
+    
+        await expect(
+          informationPage.page.getByText("* 必須項目")
+        ).toBeVisible();
+      } catch (error) {
+        console.error(error.message);
+        throw error;
+      }
+    }
+    
     test("Create a video banner without video uploaded with Separate", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await informationPage.page.locator(".uni-icon-cancel").first().click();
-        await informationPage.changeUploadVideo();
-        await informationPage.clickConfirmPupButton();
-        await expect(
-          informationPage.page.getByText("* 必須項目")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performCreateVideoBannerTest(informationPage, false);
     });
+    
     test("Create a video banner without video uploaded with Same", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await informationPage.closeAllVideo();
-        await informationPage.changeUploadVideo();
-        await informationPage.clickConfirmPupButton();
-        await expect(
-          informationPage.page.getByText("* 必須項目")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+      await performCreateVideoBannerTest(informationPage, true);
     });
 
-    test("Save hotel detail information with Image / GIF type with Separate ", async () => {
+    // "Save hotel detail information with Image / GIF/video
+    async function saveHotelDetailInformation(informationPage, type, same) {
       try {
         await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeImage();
-        await informationPage.page.locator(".uni-icon-clear").first().click();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.changeUploadImage();
-        await informationPage.selectImage();
+    
+        if (type === "Image / GIF") {
+          await informationPage.changeTypeImage();
+          if (same) {
+            await informationPage.page.waitForTimeout(1000);
+            await informationPage.closeAllImages();
+          } else {
+            await informationPage.page.locator(".uni-icon-clear").first().click();
+          }
+          await informationPage.page.waitForTimeout(1000);
+          await informationPage.changeUploadImage();
+          await informationPage.selectImage();
+        } else if (type === "video") {
+          await informationPage.changeTypeVideo();
+          if (same) {
+            await informationPage.page.waitForTimeout(1000);
+            await informationPage.closeAllVideo();
+          } else {
+            await informationPage.page.locator(".uni-icon-cancel").first().click();
+          }
+          await informationPage.page.waitForTimeout(1000);
+          await informationPage.changeUploadVideo();
+          await informationPage.page.waitForTimeout(1000);
+          await informationPage.selectVideo();
+        }
+    
         await informationPage.page.waitForTimeout(1000);
         await informationPage.clickConfirmPupButton();
         await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearFacilityName();
-        await informationPage.addFillFacilityName();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearAddressEempty();
-        await informationPage.addAddressEempty();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearPhoneNumber();
-        await informationPage.addFillPhoneCorrect();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearEditor();
-        await informationPage.addEditor();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmlButton();
-        await expect(
-          informationPage.page
-            .locator("uni-page-body")
-            .getByText("インフォーメーション")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
-    });
-    test("Save hotel detail information with Image / GIF type with Same ", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeImage();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.closeAllImages();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.changeUploadImage();
-        await informationPage.selectImage();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmPupButton();
-        await informationPage.localeVersion();
-        await informationPage.clearFacilityName();
-        await informationPage.addFillFacilityName();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearAddressEempty();
-        await informationPage.addAddressEempty();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearPhoneNumber();
-        await informationPage.addFillPhoneCorrect();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearEditor();
-        await informationPage.addEditor();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmlButton();
+        if (!same) {
+          await informationPage.localeVersion();
+        }
+        await informationPage.fillContent();
+    
         await expect(
           informationPage.page
             .locator("uni-page-body")
@@ -569,85 +523,26 @@ test.describe("update information", () => {
         console.error(error.message);
         throw error;
       }
+    }
+    
+    test("Save hotel detail information with Image / GIF type with Separate", async () => {
+      await saveHotelDetailInformation(informationPage, "Image / GIF", false);
     });
-
-    test("Save hotel detail information with video type with Separate ", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.page.locator(".uni-icon-cancel").first().click();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.changeUploadVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.selectVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmPupButton();
-        await informationPage.page.waitForTimeout(1000);
-
-        await informationPage.clearFacilityName();
-        await informationPage.addFillFacilityName();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearAddressEempty();
-        await informationPage.addAddressEempty();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearPhoneNumber();
-        await informationPage.addFillPhoneCorrect();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearEditor();
-        await informationPage.addEditor();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmlButton();
-        await expect(
-          informationPage.page
-            .locator("uni-page-body")
-            .getByText("インフォーメーション")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+    
+    test("Save hotel detail information with Image / GIF type with Same", async () => {
+      await saveHotelDetailInformation(informationPage, "Image / GIF", true);
     });
-    test("Save hotel detail information with video type with Same ", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.closeAllVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.changeUploadVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.selectVideo();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmPupButton();
-        await informationPage.page.waitForTimeout(1000);
-
-        await informationPage.localeVersion();
-        await informationPage.clearFacilityName();
-        await informationPage.addFillFacilityName();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearAddressEempty();
-        await informationPage.addAddressEempty();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearPhoneNumber();
-        await informationPage.addFillPhoneCorrect();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearEditor();
-        await informationPage.addEditor();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmlButton();
-        await expect(
-          informationPage.page
-            .locator("uni-page-body")
-            .getByText("インフォーメーション")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+    
+    test("Save hotel detail information with video type with Separate", async () => {
+      await saveHotelDetailInformation(informationPage, "video", false);
     });
-
-    test("Save hotel detail information with url type with Separate ", async () => {
+    
+    test("Save hotel detail information with video type with Same", async () => {
+      await saveHotelDetailInformation(informationPage, "video", true);
+    });
+    
+    // Save hotel detail information with URL 
+    async function saveHotelDetailInformationWithURLType(informationPage, same) {
       try {
         await informationPage.clickInformationPencilIcon();
         await informationPage.changeTypeURL();
@@ -655,19 +550,13 @@ test.describe("update information", () => {
         await informationPage.clearUrl();
         await informationPage.addUrl();
         await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearFacilityName();
-        await informationPage.addFillFacilityName();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearAddressEempty();
-        await informationPage.addAddressEempty();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearPhoneNumber();
-        await informationPage.addFillPhoneCorrect();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearEditor();
-        await informationPage.addEditor();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmlButton();
+    
+        if (!same) {
+          await informationPage.localeVersion();
+        }
+    
+        await informationPage.fillContent();
+    
         await expect(
           informationPage.page
             .locator("uni-page-body")
@@ -677,39 +566,16 @@ test.describe("update information", () => {
         console.error(error.message);
         throw error;
       }
+    }
+    
+    test("Save hotel detail information with URL type with Separate", async () => {
+      await saveHotelDetailInformationWithURLType(informationPage, false);
     });
-    test("Save hotel detail information with url type with Same ", async () => {
-      try {
-        await informationPage.clickInformationPencilIcon();
-        await informationPage.changeTypeURL();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearUrl();
-        await informationPage.addUrl();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.localeVersion();
-        await informationPage.clearFacilityName();
-        await informationPage.addFillFacilityName();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearAddressEempty();
-        await informationPage.addAddressEempty();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearPhoneNumber();
-        await informationPage.addFillPhoneCorrect();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clearEditor();
-        await informationPage.addEditor();
-        await informationPage.page.waitForTimeout(1000);
-        await informationPage.clickConfirmlButton();
-        await expect(
-          informationPage.page
-            .locator("uni-page-body")
-            .getByText("インフォーメーション")
-        ).toBeVisible();
-      } catch (error) {
-        console.error(error.message);
-        throw error;
-      }
+    
+    test("Save hotel detail information with URL type with Same", async () => {
+      await saveHotelDetailInformationWithURLType(informationPage, true);
     });
+    
   });
 
   test.afterAll(async ({ browser }) => {
